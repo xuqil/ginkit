@@ -10,24 +10,25 @@ import (
 	"time"
 )
 
-func TestTokenBucketLimiter_BuildMiddleware(t *testing.T) {
+func TestLeakyLeakyBucketLimiter_BuildMiddleware(t *testing.T) {
 	testCases := []struct {
 		name    string
-		b       func() *TokenBucketLimiter
+		b       func() *LeakyBucketLimiter
 		handler func(ctx *gin.Context)
 		ctx     func() context.Context
 
 		wantStatus int
 	}{
 		{
-			name: "closed",
-			b: func() *TokenBucketLimiter {
-				closeChan := make(chan struct{})
-				close(closeChan)
-				return &TokenBucketLimiter{
-					tokens: make(chan struct{}),
-					close:  closeChan,
+			name: "stopped",
+			b: func() *LeakyBucketLimiter {
+				producer := time.NewTicker(time.Second)
+				res := &LeakyBucketLimiter{
+					producer: producer,
+					close:    make(chan struct{}),
 				}
+				_ = res.Close()
+				return res
 			},
 			ctx: func() context.Context {
 				return context.Background()
@@ -36,10 +37,10 @@ func TestTokenBucketLimiter_BuildMiddleware(t *testing.T) {
 		},
 		{
 			name: "context canceled",
-			b: func() *TokenBucketLimiter {
-				return &TokenBucketLimiter{
-					tokens: make(chan struct{}),
-					close:  make(chan struct{}),
+			b: func() *LeakyBucketLimiter {
+				return &LeakyBucketLimiter{
+					producer: time.NewTicker(time.Second * 3),
+					close:    make(chan struct{}),
 				}
 			},
 			ctx: func() context.Context {
@@ -51,12 +52,12 @@ func TestTokenBucketLimiter_BuildMiddleware(t *testing.T) {
 		},
 		{
 			name: "get tokens",
-			b: func() *TokenBucketLimiter {
+			b: func() *LeakyBucketLimiter {
 				ch := make(chan struct{}, 1)
 				ch <- struct{}{}
-				return &TokenBucketLimiter{
-					tokens: ch,
-					close:  make(chan struct{}),
+				return &LeakyBucketLimiter{
+					producer: time.NewTicker(time.Second * 1),
+					close:    make(chan struct{}),
 				}
 			},
 			ctx: func() context.Context {
@@ -84,8 +85,8 @@ func TestTokenBucketLimiter_BuildMiddleware(t *testing.T) {
 	}
 }
 
-func TestTokenBucketLimiter_Tokens(t *testing.T) {
-	limiter := NewTokenBucketLimiter(10, time.Second*2)
+func TestLeakyBucketLimiter_Leaky(t *testing.T) {
+	limiter := NewLeakyBucketLimiter(time.Second * 2)
 	defer func() {
 		_ = limiter.Close()
 	}()
