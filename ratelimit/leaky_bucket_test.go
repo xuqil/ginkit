@@ -48,7 +48,7 @@ func TestLeakyLeakyBucketLimiter_BuildMiddleware(t *testing.T) {
 				cancel()
 				return ctx
 			},
-			wantStatus: http.StatusGatewayTimeout,
+			wantStatus: http.StatusTooManyRequests,
 		},
 		{
 			name: "get tokens",
@@ -113,5 +113,5 @@ func TestLeakyBucketLimiter_Leaky(t *testing.T) {
 	req = req.WithContext(ctx)
 	w = httptest.NewRecorder()
 	server.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusGatewayTimeout, w.Code)
+	assert.Equal(t, http.StatusTooManyRequests, w.Code)
 }

@@ -49,7 +49,7 @@ func (s *SlideWindowLimiter) BuildMiddleware() gin.HandlerFunc {
 		s.mutex.Unlock()
 		// The number of requests has reached the threshold
 		if length >= s.rate {
-			ctx.AbortWithStatus(http.StatusGatewayTimeout)
+			ctx.AbortWithStatus(http.StatusTooManyRequests)
 		}
 		s.queue.PushBack(now)
 		ctx.Next()

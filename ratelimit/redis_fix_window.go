@@ -37,7 +37,7 @@ func (f *RedisFixWindowLimiter) BuildMiddleware() gin.HandlerFunc {
 			return
 		}
 		if limit {
-			ctx.AbortWithStatus(http.StatusGatewayTimeout)
+			ctx.AbortWithStatus(http.StatusTooManyRequests)
 		}
 		ctx.Next()
 	}

@@ -46,7 +46,7 @@ func (t *TokenBucketLimiter) BuildMiddleware() gin.HandlerFunc {
 		case <-t.close:
 			ctx.Next()
 		case <-ctx.Request.Context().Done():
-			ctx.AbortWithStatus(http.StatusGatewayTimeout)
+			ctx.AbortWithStatus(http.StatusTooManyRequests)
 		case <-t.tokens:
 			ctx.Next()
 		}

@@ -37,7 +37,7 @@ func TestRedisFixWindowLimiter_e2e_BuildMiddleware(t *testing.T) {
 	req = req.WithContext(context.Background())
 	w = httptest.NewRecorder()
 	server.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusGatewayTimeout, w.Code)
+	assert.Equal(t, http.StatusTooManyRequests, w.Code)
 
 	// Reset
 	time.Sleep(time.Second * 3)

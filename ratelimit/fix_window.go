@@ -45,7 +45,7 @@ func (f *FixWindowLimiter) BuildMiddleware() gin.HandlerFunc {
 		cnt = atomic.AddInt64(&f.cnt, 1)
 		// The number of requests has reached the threshold
 		if cnt > f.rate {
-			ctx.AbortWithStatus(http.StatusGatewayTimeout)
+			ctx.AbortWithStatus(http.StatusTooManyRequests)
 		}
 		ctx.Next()
 	}

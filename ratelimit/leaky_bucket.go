@@ -25,7 +25,7 @@ func (l *LeakyBucketLimiter) BuildMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		select {
 		case <-ctx.Request.Context().Done():
-			ctx.AbortWithStatus(http.StatusGatewayTimeout)
+			ctx.AbortWithStatus(http.StatusTooManyRequests)
 		case <-l.close:
 			ctx.Next()
 		case <-l.producer.C:
